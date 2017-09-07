@@ -23,21 +23,22 @@ namespace WasteManagement.TelemetryProcessing
         static CloudTable weatherTable;
         static CloudQueueClient queueClient;
         static CloudQueue telemetryQueue;
-        static CloudQueue archiveQueue;
-
-        static string storageAcct = ConfigurationManager.AppSettings["StorageAccount"];
-        //static string alertLevelSetting = ConfigurationManager.AppSettings["AlertLevel"];
+        static CloudQueue archiveQueue;        
+        
         static string sensorStateTableName = "SensorState";
         static string telemetryQueueName = "telemetry";
 
         static WeatherEntity weatherEntity = new WeatherEntity();
         static string weatherTableName = "Weather";
-        static string weatherRowkey = ConfigurationManager.AppSettings["OwmLocation"];
-        static string weatherPartionkey = "sfm";
 
         static string alertQueueName = "alerts";
         static string archiveQueueName = "archive";
         static int alertLevel = 80;
+
+        //static string alertLevelSetting = ConfigurationManager.AppSettings["AlertLevel"];
+        static string weatherRowkey = ConfigurationManager.AppSettings["OwmLocation"];
+        static string appId = ConfigurationManager.AppSettings["ApplicationId"];
+        static string storageAcct = ConfigurationManager.AppSettings["StorageAccount"];
 
         [FunctionName("TelemetryProcessing")]
         public static void Run([TimerTrigger("0 */10 * * * *")]TimerInfo myTimer, TraceWriter log)
@@ -100,7 +101,7 @@ namespace WasteManagement.TelemetryProcessing
 
         private static void GetCurrentWeather()
         {
-            TableOperation retrieveOperation = TableOperation.Retrieve<WeatherEntity>(weatherPartionkey, weatherRowkey);     //retrieve Bin SMS Alter data
+            TableOperation retrieveOperation = TableOperation.Retrieve<WeatherEntity>(appId, weatherRowkey);     //retrieve Bin SMS Alter data
             TableResult retrievedResult = weatherTable.Execute(retrieveOperation);
 
             if (retrievedResult.Result != null)
@@ -138,6 +139,8 @@ namespace WasteManagement.TelemetryProcessing
 
         private static List<TelemetryEntity> UpdateSensorState(List<TelemetryEntity> telemetry, List<SensorEntity> sensor, TraceWriter log)
         {
+            log.Info($"{telemetry.Count} telemetry items processed");
+
             var queryResult = (from l in telemetry
                                select new TelemetryEntity()
                                {
@@ -157,7 +160,9 @@ namespace WasteManagement.TelemetryProcessing
 
             foreach (var item in queryResult)
             {
-                TableOperation retrieveOperation = TableOperation.Retrieve<SensorEntity>("sfm", item.DeviceId);     //retrieve Bin SMS Alter data
+                if (string.IsNullOrEmpty(item.DeviceId) || string.IsNullOrEmpty(appId)) { continue; }
+
+                TableOperation retrieveOperation = TableOperation.Retrieve<SensorEntity>(appId, item.DeviceId);     //retrieve Bin SMS Alter data
                 TableResult retrievedResult = sensorStateTable.Execute(retrieveOperation);
 
                 if (retrievedResult.Result != null)

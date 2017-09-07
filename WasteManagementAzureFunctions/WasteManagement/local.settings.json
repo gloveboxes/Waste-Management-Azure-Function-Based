@@ -11,6 +11,7 @@
     "AlertDefaultPhoneNumber": "0403809914",
     "OwmLocation": "Sydney, AU",
     "OwmContainer": "reference-data",
-    "OpenWeatherMapKey": "c204bb28a2f9dc23925f27b9e21296dd"
+    "OpenWeatherMapKey": "c204bb28a2f9dc23925f27b9e21296dd",
+    "ApplicationId": "sfm"
   }
 }

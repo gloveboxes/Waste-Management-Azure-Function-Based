@@ -15,8 +15,8 @@ namespace WasteManagement.OpenWeatherMap
         static string owmKey = ConfigurationManager.AppSettings["OpenWeatherMapKey"];
         static string owmLocation = ConfigurationManager.AppSettings["OwmLocation"];
         static string storageAcct = ConfigurationManager.AppSettings["StorageAccount"];
+        static string appId = ConfigurationManager.AppSettings["ApplicationId"];
         static string weatherTable = "Weather";
-        static string appId = "sfm";
 
         static WeatherEntity weatherEntity = new WeatherEntity();
         static CloudStorageAccount storageAccount;
