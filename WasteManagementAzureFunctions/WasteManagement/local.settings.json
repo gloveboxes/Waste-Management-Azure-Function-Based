@@ -1,0 +1,16 @@
+{
+    "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=sydneyfishmarket01;AccountKey=/Wp9G3gsU9Hgk4MCxOAzE5HYbHSP3dmnkjZedodkNoUuo/rkEpyIgJaTA1eq834MAcm/Z3/P7/FJH+WbeUnf3Q==;EndpointSuffix=core.windows.net",
+    "AzureWebJobsDashboard": "",
+    "StorageAccount": "DefaultEndpointsProtocol=https;AccountName=sydneyfishmarket01;AccountKey=/Wp9G3gsU9Hgk4MCxOAzE5HYbHSP3dmnkjZedodkNoUuo/rkEpyIgJaTA1eq834MAcm/Z3/P7/FJH+WbeUnf3Q==;EndpointSuffix=core.windows.net",
+    "ServiceBusQueueConnectionString": "Endpoint=sb://glovebox-01.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=foVgle9ymABV8+IDved6uAoNdO/KRhRNNH1pAXXCbJ4=",
+    "ServiceBusQueueName": "waste-management",
+    "TelstraSMSApiConsumerKey": "M8ID3n5XRBIWcSdrY1lGBQTE3tR61u6x",
+    "TelstraSmsConsumerSecret": "n1Pkeg0yVG001xbD",
+    "AlertDefaultPhoneNumber": "0403809914",
+    "OwmLocation": "Sydney, AU",
+    "OwmContainer": "reference-data",
+    "OpenWeatherMapKey": "c204bb28a2f9dc23925f27b9e21296dd"
+  }
+}
