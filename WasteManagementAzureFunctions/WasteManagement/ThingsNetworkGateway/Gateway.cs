@@ -35,7 +35,7 @@ namespace WasteManagement.ThingsNetworkGateway
         {
             dynamic data = await req.Content.ReadAsAsync<object>(); // Get request body
 
-            TtnEntity ttn = JsonConvert.DeserializeObject<TtnEntity>(data.ToString(), new JsonSerializerSettings() { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+            TheThingsNetworkEntity ttn = JsonConvert.DeserializeObject<TheThingsNetworkEntity>(data.ToString(), new JsonSerializerSettings() { ContractResolver = new CamelCasePropertyNamesContractResolver() });
 
             if (!ValidTtnApplicationId(ttn.app_id)) { return req.CreateResponse(HttpStatusCode.BadRequest); }
 
@@ -51,7 +51,7 @@ namespace WasteManagement.ThingsNetworkGateway
             return req.CreateResponse(HttpStatusCode.OK);
         }
 
-        public static async Task<bool> PostDataToIoTHub(string host, string key, string deviceId, uint data, TtnEntity ttn)
+        public static async Task<bool> PostDataToIoTHub(string host, string key, string deviceId, uint data, TheThingsNetworkEntity ttn)
         {
             string restUri = $"https://{host}/devices/{ttn.dev_id}/messages/events?api-version={iotHubApiVersion}";
             var sasToken = GetDeviceSaSToken(host, ttn.dev_id, key);
