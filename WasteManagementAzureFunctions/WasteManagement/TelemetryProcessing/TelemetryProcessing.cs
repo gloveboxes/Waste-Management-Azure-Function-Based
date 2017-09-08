@@ -40,6 +40,7 @@ namespace WasteManagement.TelemetryProcessing
         static string appId = ConfigurationManager.AppSettings["ApplicationId"];
         static string storageAcct = ConfigurationManager.AppSettings["StorageAccount"];
 
+        // https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-timer
         [FunctionName("TelemetryProcessing")]
         public static void Run([TimerTrigger("0 */10 * * * *")]TimerInfo myTimer, TraceWriter log)
         {

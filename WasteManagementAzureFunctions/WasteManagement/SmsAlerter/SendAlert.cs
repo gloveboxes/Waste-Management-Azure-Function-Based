@@ -22,7 +22,7 @@ namespace WasteManagement.SmsAlerter
 
 
         [FunctionName("SendAlertTrigger")]
-        public static void Run([TimerTrigger("0 * */2 * * *")]TimerInfo AlertTimer, TraceWriter log)
+        public static void Run([TimerTrigger("0 0 */4 * * *")]TimerInfo AlertTimer, TraceWriter log)
         {
             List<CloudQueueMessage> messages = new List<CloudQueueMessage>();
             var smsManager = new SmsManager(telstraSmsApiConsumerKey, telstraSmsConsumerSecret);
