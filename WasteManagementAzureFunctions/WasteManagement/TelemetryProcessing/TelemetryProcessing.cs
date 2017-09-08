@@ -23,8 +23,8 @@ namespace WasteManagement.TelemetryProcessing
         static CloudTable weatherTable;
         static CloudQueueClient queueClient;
         static CloudQueue telemetryQueue;
-        static CloudQueue archiveQueue;        
-        
+        static CloudQueue archiveQueue;
+
         static string sensorStateTableName = "SensorState";
         static string telemetryQueueName = "telemetry";
 
@@ -141,6 +141,19 @@ namespace WasteManagement.TelemetryProcessing
         {
             log.Info($"{telemetry.Count} telemetry items processed");
 
+            //https://stackoverflow.com/questions/23940246/how-to-query-all-rows-in-windows-azure-table-storage
+            //https://docs.microsoft.com/en-us/dotnet/api/microsoft.windowsazure.storage.table.tablebatchoperation?view=azurestorage-8.1.3
+            // 
+
+            //var tbo = new TableBatchOperation();
+            //TableOperation mergeOperation = TableOperation.InsertOrMerge(new SensorEntity());
+            //tbo.Add(mergeOperation);
+
+            //sensorStateTable.ExecuteBatch(tbo);
+            //var entities = sensorStateTable.ExecuteQuery(new TableQuery<SensorEntity>()).ToList();
+
+
+
             var queryResult = (from l in telemetry
                                select new TelemetryEntity()
                                {
@@ -167,20 +180,23 @@ namespace WasteManagement.TelemetryProcessing
 
                 if (retrievedResult.Result != null)
                 {
+                    #region update sensor state table
                     var sensorEntity = (SensorEntity)retrievedResult.Result;
 
-                    // update sensor state
                     sensor.Add(sensorEntity);
                     sensorEntity.Level = item.Level;
 
-                    TableOperation mergeOperation = TableOperation.Merge(sensorEntity);
-                    sensorStateTable.Execute(mergeOperation);
+                    TableOperation mergeOperation = TableOperation.InsertOrMerge(sensorEntity);
+                    var result = sensorStateTable.Execute(mergeOperation);
+                    #endregion
 
+                    #region enqueue on to the audit queue
                     item.Location = sensorEntity.Location;
                     item.PhoneNumber = sensorEntity.PhoneNumber;
 
                     string json = JsonConvert.SerializeObject(item);
                     archiveQueue.AddMessage(new CloudQueueMessage(json));
+                    #endregion
                 }
             }
             return queryResult;

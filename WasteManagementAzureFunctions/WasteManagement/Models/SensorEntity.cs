@@ -9,6 +9,6 @@ namespace WasteManagement.Models
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public string PhoneNumber { get; set; }
-        public UInt32 Level { get; set; }
+        public int Level { get; set; }
     }
 }

@@ -37,7 +37,7 @@ namespace WasteManagement.ThingsNetworkGateway
 
 
         [FunctionName("TheThingsNetworkBridge")]
-        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequestMessage req, TraceWriter log)
+        public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]HttpRequestMessage req, TraceWriter log)
         {
             DateTime timestamp = DateTime.UtcNow;
             TheThingsNetworkEntity ttn;            

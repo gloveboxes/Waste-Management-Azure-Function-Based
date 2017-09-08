@@ -6,7 +6,7 @@ namespace WasteManagement.Models
     public class TelemetryEntity
     {
         public string DeviceId { get; set; } = string.Empty;
-        public uint Level { get; set; }
+        public int Level { get; set; }
         public int MsgId { get; set; }
         public int Schema { get; set; } = 1;
         public DateTime Timestamp { get; set; }
@@ -20,7 +20,7 @@ namespace WasteManagement.Models
         public int Clouds { get; set; }
         public string Weather { get; set; } = string.Empty;
 
-        public string ToJson(string deviceId, uint level)
+        public string ToJson(string deviceId, int level)
         {
             this.DeviceId = deviceId;
             this.Level = level;
