@@ -9,6 +9,7 @@ using System;
 using System.Configuration;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using WasteManagement.Models;
 
@@ -16,32 +17,34 @@ namespace WasteManagement.ThingsNetworkGateway
 {
     public static class Bridge
     {
-        static CloudStorageAccount storageAccount;
-        static CloudQueueClient queueClient;
-        static CloudQueue telemetryQueue;
-        static string telemetryQueueName = "telemetry";
-
         public class Telemetry
         {
             public string DeviceId { get; set; } = string.Empty;
-            public uint Level { get; set; }
+            public int Level { get; set; }
+            public byte Battery { get; set; }
             public int MsgId { get; set; } = 1;
             public int Schema { get; set; } = 1;
             public DateTime Timestamp { get; set; }
         }
 
-        const int ResonableLevelMax = 100; // 100% Level
+        static CloudStorageAccount storageAccount;
+        static CloudQueueClient queueClient;
+        static CloudQueue telemetryQueue;
+        static Telemetry telemetry = new Telemetry();
+
+        static string telemetryQueueName = "telemetry";
+
+        const int ResonableLevelMax = 200;
 
         static string storageAcct = ConfigurationManager.AppSettings["StorageAccount"];
         static string ttnAppIDs = ConfigurationManager.AppSettings["TTNAppIDsCommaSeperated"];
-
+        
 
         [FunctionName("TheThingsNetworkBridge")]
         public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]HttpRequestMessage req, TraceWriter log)
         {
             DateTime timestamp = DateTime.UtcNow;
-            TheThingsNetworkEntity ttn;            
-            Telemetry telemetry = new Telemetry();
+            TheThingsNetworkEntity ttn;
 
             dynamic data = await req.Content.ReadAsAsync<object>(); // Get request body
 
@@ -54,32 +57,37 @@ namespace WasteManagement.ThingsNetworkGateway
                 return req.CreateResponse(HttpStatusCode.BadRequest);
             }
 
-            if (!ValidTtnApplicationId(ttn.app_id)) {
-                log.Info("Invalid The Things Network Appid");
+            if (!ValidTtnApplicationId(ttn.app_id))
+            {
+                log.Info($"Invalid The Things Network Appid: {ttn.app_id}");
                 return req.CreateResponse(HttpStatusCode.BadRequest);
             }
 
-            var result = DecodeRawData(ttn.payload_raw);
-
-            if (result > ResonableLevelMax)
+            if (!DecodeRawData(ttn.payload_raw))
             {
-                log.Info($"Level data invalid. {result} > {ResonableLevelMax}");
+                log.Info($"Invalid Raw Data: {ttn.payload_raw}");
+                return req.CreateResponse(HttpStatusCode.BadRequest);
+            }
+
+            if (telemetry.Level < 0 || telemetry.Level > ResonableLevelMax)
+            {
+                log.Info($"Level data invalid. {telemetry.Level} > {ResonableLevelMax}");
                 return req.CreateResponse(HttpStatusCode.BadRequest);
             }
 
             storageAccount = CloudStorageAccount.Parse(storageAcct);
             queueClient = storageAccount.CreateCloudQueueClient();
             telemetryQueue = queueClient.GetQueueReference(telemetryQueueName);
-            
 
             telemetry.DeviceId = ttn.dev_id;
             telemetry.Timestamp = timestamp;
-            telemetry.Level = result;
 
             try
             {
                 string json = JsonConvert.SerializeObject(telemetry);
                 telemetryQueue.AddMessage(new CloudQueueMessage(json));
+
+                log.Info(json);
             }
             catch (Exception ex)
             {
@@ -87,23 +95,37 @@ namespace WasteManagement.ThingsNetworkGateway
                 return req.CreateResponse(HttpStatusCode.BadRequest);
             }
 
-            log.Info($"device '{ttn.dev_id}', raw payload '{ttn.payload_raw}', decoded value '{result}'");
-
             return req.CreateResponse(HttpStatusCode.OK);
         }
 
-        public static uint DecodeRawData(string base64EncodedData)
+        public static bool DecodeRawData(string base64EncodedData)
         {
-            uint result = 0;
+            //Data Payload
+            //Hexadecimal in format AAAABBBBCC where
+            //AAAA Static application identifier
+            //BBBB Tank level in centimetres, 16 bits signed integer
+            //CC Internal battery level in 1 / 10 volts, 8 bits unsigned integer
+
+            //  For example, 000400d525 should be interpreted as
+            //0004 Application identifier, which does not change
+            //00d5 Tank level. Converting to decimal, this is 213 cm
+            //25 Internal battery. Converting to decimal, this is 3.7V
+
             var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
             var d = System.Text.Encoding.UTF7.GetString(base64EncodedBytes);
 
-            for (int i = 0; i < d.Length; i++)
+            if (d.Length != 5)
             {
-                result = result << (8);
-                result += (byte)d[i];
+                return false;
             }
-            return result;
+            else
+            {
+                telemetry.Level = (byte)(d[2] << (8));
+                telemetry.Level += (byte)d[3];
+
+                telemetry.Battery = (byte)d[4];
+            }
+            return true;
         }
 
         public static bool ValidTtnApplicationId(string appId)
@@ -112,7 +134,7 @@ namespace WasteManagement.ThingsNetworkGateway
             string[] appIds = ttnAppIDs.Split(',');
             foreach (string id in appIds)
             {
-                if (appId == id)
+                if (appId.Trim() == id.Trim())
                 {
                     found = true;
                     break;

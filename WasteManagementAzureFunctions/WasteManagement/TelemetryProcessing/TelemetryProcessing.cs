@@ -32,7 +32,7 @@ namespace WasteManagement.TelemetryProcessing
         static string weatherTableName = "Weather";
 
         static string alertQueueName = "alerts";
-        static string archiveQueueName = "archive";
+        static string loggingQueueName = "logging";
         static int alertLevel = 80;
 
         //static string alertLevelSetting = ConfigurationManager.AppSettings["AlertLevel"];
@@ -91,7 +91,7 @@ namespace WasteManagement.TelemetryProcessing
 
             queueClient = storageAccount.CreateCloudQueueClient();
             telemetryQueue = queueClient.GetQueueReference(telemetryQueueName);
-            archiveQueue = queueClient.GetQueueReference(archiveQueueName);
+            archiveQueue = queueClient.GetQueueReference(loggingQueueName);
 
             tableClient = storageAccount.CreateCloudTableClient();
             sensorStateTable = tableClient.GetTableReference(sensorStateTableName);
