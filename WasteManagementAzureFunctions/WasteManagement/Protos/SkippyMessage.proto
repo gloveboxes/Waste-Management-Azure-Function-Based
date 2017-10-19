@@ -1,0 +1,51 @@
+// Skippy Core packets
+
+package SkippyCore;
+
+message SkippyMessage
+{
+    // ----------------
+    // Message Types
+
+    message DeviceMessage
+    {
+        required bytes              deviceId                    = 1;
+        optional string             firmwareVersion             = 2;
+    }
+
+    enum ReasonForMessage
+    {
+        SIGN_ON                     = 0;
+        SAMPLE_PERIOD               = 1;
+        ALARM                       = 2;
+    }
+
+    message AccelerometerMessage
+    {
+        required float              x_g                         = 1;
+        required float              y_g                         = 2;
+        required float              z_g                         = 3;
+    }
+
+    message SignalStrengthMessage
+    {
+        required sint32             rssi_dbm                    = 1;
+        required uint32             bitErrorRate                = 2;
+    }
+
+    // ----------------
+    // Message Contents
+
+    required DeviceMessage          device                      = 1;
+    required ReasonForMessage       reason                      = 2;
+    optional string                 description                 = 3;
+
+    optional bool                   temperatureOkay             = 4;
+    optional AccelerometerMessage   accelerometer               = 5;
+    optional int32                  ultrasound                  = 6;
+    optional uint32                 batteryVoltage_mV           = 7;
+    optional SignalStrengthMessage  signalStrength              = 8;
+    optional string                 timestamp                   = 9;
+    optional int32                  temperature_dC              = 10;
+	repeated int32                  ultrasoundRaw               = 11;
+}

@@ -119,6 +119,7 @@ namespace WasteManagement.TelemetryProcessing
                                {
                                    DeviceId = l.DeviceId,
                                    Level = l.Level,
+                                   Battery = l.Battery,
                                    Timestamp = l.Timestamp,
                                    Location = s.Location,
                                    PhoneNumber = s.PhoneNumber
@@ -160,6 +161,7 @@ namespace WasteManagement.TelemetryProcessing
                                {
                                    DeviceId = l.DeviceId,
                                    Level = l.Level,
+                                   Battery = l.Battery,
                                    Temperature = weatherEntity.Temperature,
                                    Pressure = weatherEntity.Pressure,
                                    Humidity = weatherEntity.Humidity,

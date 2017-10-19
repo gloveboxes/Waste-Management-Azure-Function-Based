@@ -1,12 +1,12 @@
-﻿namespace WasteManagement.TelemetryLogger
-{
-    internal class SchemaElement<T>
-    {
-        private string v;
+﻿//namespace WasteManagement.TelemetryLogger
+//{
+//    internal class SchemaElement<T>
+//    {
+//        private string v;
 
-        public SchemaElement(string v)
-        {
-            this.v = v;
-        }
-    }
-}
+//        public SchemaElement(string v)
+//        {
+//            this.v = v;
+//        }
+//    }
+//}

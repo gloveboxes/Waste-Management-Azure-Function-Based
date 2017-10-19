@@ -3,9 +3,11 @@
     <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="TelemetryLogger\SchemaElement.cs" />
     <Compile Remove="ThingsNetworkGateway\run.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Google.ProtocolBuffers" Version="2.4.1.555" />
     <PackageReference Include="Microsoft.Azure.WebJobs.ServiceBus" Version="2.1.0-beta1" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />

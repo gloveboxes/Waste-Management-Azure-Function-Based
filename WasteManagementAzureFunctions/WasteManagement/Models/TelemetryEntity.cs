@@ -7,7 +7,7 @@ namespace WasteManagement.Models
     {
         public string DeviceId { get; set; } = string.Empty;
         public int Level { get; set; }
-        public byte Battery { get; set; }
+        public int Battery { get; set; }
         public int MsgId { get; set; }
         public int Schema { get; set; } = 1;
         public DateTime Timestamp { get; set; }
