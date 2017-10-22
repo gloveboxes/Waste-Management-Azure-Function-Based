@@ -48,7 +48,7 @@ namespace WasteManagement.SmsAlerter
                                    {
                                        DeviceId = l.DeviceId,
                                        PhoneNumber = l.PhoneNumber,
-                                       Level = l.Level,
+                                       PercentageFull = l.PercentageFull,
                                        Location = l.Location
                                    }).Where(p => p.PhoneNumber == phone).GroupBy(x => x.DeviceId).Select(z => z.OrderByDescending(i => i.PercentageFull).First()).OrderByDescending(l => l.PercentageFull).ToList();
 
@@ -57,7 +57,7 @@ namespace WasteManagement.SmsAlerter
                 foreach (var item in queryResult)
                 {
 
-                    log.Info($"BinId: {item.DeviceId}, Location: {item.Location}, Level: {item.Level}, Phone: {item.PhoneNumber}");
+                    log.Info($"BinId: {item.DeviceId}, Location: {item.Location}, Level: {item.PercentageFull}, Phone: {item.PhoneNumber}");
                 }
 
                 log.Info("============End Output Data============");
