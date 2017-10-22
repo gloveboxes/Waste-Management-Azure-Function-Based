@@ -67,11 +67,15 @@ namespace WasteManagement.TelemetryProcessing
                 {
                     found = true;
                     messages.Add(message);
-                    try
+
+                    if (message.DequeueCount < 3) // if dequeue count greater 4 then assume this is a dodgy message so dont process it
                     {
-                        telemetry.Add(JsonConvert.DeserializeObject<TelemetryEntity>(message.AsString, new JsonSerializerSettings() { ContractResolver = new CamelCasePropertyNamesContractResolver() }));
+                        try
+                        {
+                            telemetry.Add(JsonConvert.DeserializeObject<TelemetryEntity>(message.AsString, new JsonSerializerSettings() { ContractResolver = new CamelCasePropertyNamesContractResolver() }));
+                        }
+                        catch { log.Info("Invalid data"); }
                     }
-                    catch { log.Info("Invalid data"); }
                 }
             }
 
@@ -118,12 +122,13 @@ namespace WasteManagement.TelemetryProcessing
                                select new TelemetryEntity()
                                {
                                    DeviceId = l.DeviceId,
-                                   Level = l.Level,
+                                   Level = (s.BinDepth - l.Level) < 0 ? 0 : s.BinDepth - l.Level,                                   
+                                   PercentageFull = CalculatePercentage(l.Level, s.BinDepth),
                                    Battery = l.Battery,
                                    Timestamp = l.Timestamp,
                                    Location = s.Location,
                                    PhoneNumber = s.PhoneNumber
-                               }).Where(z => z.Level > alertLevel).ToList();
+                               }).Where(z => z.PercentageFull > alertLevel).ToList();
 
             log.Info($"{alertResult.Count} alerts queued");
 
@@ -139,22 +144,18 @@ namespace WasteManagement.TelemetryProcessing
             }
         }
 
+        private static int CalculatePercentage(int level, int binDepth)
+        {
+            float invertedLevel = binDepth - level < 0 ? 0 : binDepth - level;
+            return (int)(invertedLevel / (float)binDepth * 100);
+        }
+
         private static List<TelemetryEntity> UpdateSensorState(List<TelemetryEntity> telemetry, List<SensorEntity> sensor, TraceWriter log)
         {
             log.Info($"{telemetry.Count} telemetry items processed");
 
             //https://stackoverflow.com/questions/23940246/how-to-query-all-rows-in-windows-azure-table-storage
             //https://docs.microsoft.com/en-us/dotnet/api/microsoft.windowsazure.storage.table.tablebatchoperation?view=azurestorage-8.1.3
-            // 
-
-            //var tbo = new TableBatchOperation();
-            //TableOperation mergeOperation = TableOperation.InsertOrMerge(new SensorEntity());
-            //tbo.Add(mergeOperation);
-
-            //sensorStateTable.ExecuteBatch(tbo);
-            //var entities = sensorStateTable.ExecuteQuery(new TableQuery<SensorEntity>()).ToList();
-
-
 
             var queryResult = (from l in telemetry
                                select new TelemetryEntity()
@@ -187,13 +188,20 @@ namespace WasteManagement.TelemetryProcessing
                     var sensorEntity = (SensorEntity)retrievedResult.Result;
 
                     sensor.Add(sensorEntity);
-                    sensorEntity.Level = item.Level;
+
+                    // invert the sensor level
+                    sensorEntity.Level = (sensorEntity.BinDepth - item.Level) < 0 ? 0 : sensorEntity.BinDepth - item.Level;
+                    sensorEntity.PercentageFull = CalculatePercentage(item.Level, sensorEntity.BinDepth);
+                    sensorEntity.Battery = item.Battery;
 
                     TableOperation mergeOperation = TableOperation.InsertOrMerge(sensorEntity);
                     var result = sensorStateTable.Execute(mergeOperation);
                     #endregion
 
-                    #region enqueue on to the audit queue
+                    #region enqueue on to the archive/logging queue
+                    item.Level = sensorEntity.Level;
+                    item.Battery = sensorEntity.Battery;
+                    item.PercentageFull = sensorEntity.PercentageFull;
                     item.Location = sensorEntity.Location;
                     item.PhoneNumber = sensorEntity.PhoneNumber;
 

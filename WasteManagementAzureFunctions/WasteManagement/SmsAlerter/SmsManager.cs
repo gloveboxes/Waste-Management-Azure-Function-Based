@@ -50,7 +50,7 @@ namespace WasteManagement.SmsAlerter
                                        PhoneNumber = l.PhoneNumber,
                                        Level = l.Level,
                                        Location = l.Location
-                                   }).Where(p => p.PhoneNumber == phone).GroupBy(x => x.DeviceId).Select(z => z.OrderByDescending(i => i.Level).First()).OrderByDescending(l => l.Level).ToList();
+                                   }).Where(p => p.PhoneNumber == phone).GroupBy(x => x.DeviceId).Select(z => z.OrderByDescending(i => i.PercentageFull).First()).OrderByDescending(l => l.PercentageFull).ToList();
 
                 log.Info("============Begin Output Data============");
 

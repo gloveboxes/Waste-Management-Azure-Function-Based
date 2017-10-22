@@ -10,5 +10,8 @@ namespace WasteManagement.Models
         public double Longitude { get; set; }
         public string PhoneNumber { get; set; }
         public int Level { get; set; }
+        public int PercentageFull { get; set; }
+        public int BinDepth { get; set; }
+        public int Battery { get; set; }
     }
 }
